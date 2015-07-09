@@ -133,7 +133,7 @@ fn main() {
         sfd[k] = px[iry][irx] + py[iry][irx];
     };
 
-    /** uncomment to output the trace at receiver postion
+    /* uncomment to output the trace at receiver postion
 
     let path = Path::new("trace.txt");
     let display = path.display();
@@ -156,6 +156,6 @@ fn main() {
             Ok(_) => println!("successfully wrote to {}", display),
         }
     }
-    **/
+    */
 
 }
