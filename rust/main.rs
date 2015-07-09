@@ -1,24 +1,29 @@
 use std::f64;
 use std::thread;
-use ndarray::arr2;
-// there is a crate ndarray that would make my life easier !!
+use std::iter;
+use std::error::Error;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
 
 fn main() {
     println!("Hello, world! Euh, Thomas !");
 
-    thread::sleep_ms(2000);
+    //thread::sleep_ms(2000);
 
 
-    const NX:usize = 300; //columns
-    const NY:usize = 300;  // rows
+    const NX:usize = 400; //columns
+    const NY:usize = 400;  // rows
     const NX2:usize = NX+1; //columns
     const NY2:usize = NY+1;  // rows
 
     let rho:f64  = 1500.0;
     let vp0: f64 = 2000.0;
 
-    // mutable float64 array of size (rows = NY, columns = NZ)
-    let mut vp = Box::new([[vp0; NX2]; NY2]);
+    // mutable float64 pseudo array of size (rows = NY2, columns = NX2)
+    // vp end up in the heap, no allocation problem
+    let mut row = iter::repeat(vp0).take(NX2).collect();
+    let mut vp: Vec<Vec<f64>> = iter::repeat(row).take(NY2).collect();
 
     for i in 0..NY2 {
         for j in 0..NX2 {
@@ -27,7 +32,7 @@ fn main() {
         };
     };
 
-
+    println!("{}", vp[NY2-1][NX2-1]);
 
     //define source and receiver position
     let isx = 200;
@@ -36,7 +41,7 @@ fn main() {
     let iry = 300;
 
     //source and parameters
-    const NT: usize = 3000;
+    const NT: usize = 300;
     let fc = 1000.0;
     let dx: f64  = vp0/(30.0*fc);
     let dy = dx;
@@ -46,54 +51,64 @@ fn main() {
 
     // define source function in time
     let tsour = 1.0/fc;
-    let mut t = Box::new([0f64; NT]);
+    let mut t: Vec<f64> = iter::repeat(0f64).take(NT).collect();
     for i in 0..NT {
         t[i] = (i as f64)*dt;
     };
     let lsour = tsour/dt;
     let t0 = tsour*1.5;
-    let mut tau = Box::new([0f64; NT]);
+    let mut tau: Vec<f64> = iter::repeat(0f64).take(NT).collect();
     for i in 0..NT {
         tau[i] = f64::consts::PI*(t[i]-t0)/t0;
     };
     let a = 4.0;
-    let mut fs = Box::new([0f64;NT]);
+    let mut fs: Vec<f64> = iter::repeat(0f64).take(NT).collect();
     for i in 0..NT {
         fs[i] = (1.0 - a*tau[i]*tau[i])*((-2.0*tau[i]*tau[i]).exp())
     };
 
     // define PML properties
     let npml = 30;
-    let pmlfac = 50.0;
-    let pmlexp = 2;
-/*    let mut qx = Box::new([[0f64; NX2]; NY2]);
-    let mut qy = Box::new([[0f64; NX2]; NY2]);
+    let pmlfac: f64 = 50.0;
+    let pmlexp: i32 = 2;
+    let mut qxrow = iter::repeat(0f64).take(NX2).collect();
+    let mut qyrow = iter::repeat(0f64).take(NX2).collect();
+    let mut qx: Vec<Vec<f64>> = iter::repeat(qxrow).take(NY2).collect();
+    let mut qy: Vec<Vec<f64>> = iter::repeat(qyrow).take(NY2).collect();
+
     for i in 0..npml {
         for j in 0..NX2 {
-            qy[i][j] = pmlfac*((npml-i) as f64).powi(pmlexp) as f64;
-            qy[NY2-i][j] = pmlfac*((npml-i) as f64).powi(pmlexp) as f64;
+            qy[i][j] = pmlfac*(((npml-i) as f64 ).powi(pmlexp));
+            qy[NY2-i-1][j] = pmlfac*(((npml-i) as f64).powi(pmlexp));
         }
     };
-    for j in 0..npml {
-        for i in 0..NY2 {
-            qx[i][j] = pmlfac*((npml-i) as f64).powi(pmlexp) as f64;
-            qx[i][NX2-j] = pmlfac*((npml-i) as f64).powi(pmlexp) as f64;
+    for i in 0..NY2 {
+        for j in 0..npml {
+            qx[i][NX2-j-1] = pmlfac*(((npml-j) as f64).powi(pmlexp));
+            qx[i][j] = pmlfac*(((npml-j) as f64).powi(pmlexp));
         }
     };
 
     // initialize fields
-    let mut px = [[0f64; NX2]; NY2]; // pressure field
-    let mut py = [[0f64; NX2]; NY2];
-    let mut ux = [[0f64; NX2]; NY2]; // particle velocity field
-    let mut uy = [[0f64; NX2]; NY2];
 
-    let mut sfd = [0f64; NT];
+    let mut pxrow = iter::repeat(0f64).take(NX2).collect();
+    let mut uxrow = iter::repeat(0f64).take(NX2).collect();
+    let mut pyrow = iter::repeat(0f64).take(NX2).collect();
+    let mut uyrow = iter::repeat(0f64).take(NX2).collect();
+    let mut px: Vec<Vec<f64>> = iter::repeat(pxrow).take(NY2).collect();
+    let mut py: Vec<Vec<f64>> = iter::repeat(pyrow).take(NY2).collect();
+    let mut ux: Vec<Vec<f64>> = iter::repeat(uxrow).take(NY2).collect();
+    let mut uy: Vec<Vec<f64>> = iter::repeat(uyrow).take(NY2).collect();
+
+    let mut sfd: Vec<f64> = iter::repeat(0f64).take(NT).collect();
 
     let mut diffop = 0f64;
     let mut pmlop  = 0f64;
 
     // Main Loop
     for k in 1..NT {
+
+        if k%10 == 0 { println!("timestep : {}", k)}
         // inject source
         px[isy][isx] = px[isy][isx] + dt*0.5*fs[k];
         py[isy][isx] = py[isy][isx] + dt*0.5*fs[k];
@@ -126,6 +141,28 @@ fn main() {
 
         sfd[k] = px[iry][irx] + py[iry][irx];
     };
-*/
+
+     let path = Path::new("trace.txt");
+    let display = path.display();
+
+    // Open a file in write-only mode, returns `io::Result<File>`
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}: {}",
+                           display,
+                           Error::description(&why)),
+        Ok(file) => file,
+    };
+
+    for i in 0..sfd.len(){
+        let s = sfd[i].to_string()+"\n";
+        match file.write_all(s.as_bytes()) {
+            Err(why) => {
+                panic!("couldn't write to {}: {}", display,
+                                                Error::description(&why))
+            },
+            Ok(_) => println!("successfully wrote to {}", display),
+        }
+    }
+
 
 }
