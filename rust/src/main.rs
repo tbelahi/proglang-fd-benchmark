@@ -1,16 +1,7 @@
 use std::f64;
-use std::thread;
-use std::iter;
-use std::error::Error;
-use std::io::prelude::*;
-use std::fs::File;
-use std::path::Path;
 
 fn main() {
-    println!("Hello, world! Euh, Thomas !");
-
-    //thread::sleep_ms(2000);
-
+    //println!("Hello, world!);
 
     const NX:usize = 400; //columns
     const NY:usize = 400;  // rows
@@ -32,7 +23,7 @@ fn main() {
         };
     };
 
-    println!("{}", vp[NY2-1][NX2-1]);
+    //println!("{}", vp[NY2-1][NX2-1]);
 
     //define source and receiver position
     let isx = 200;
@@ -108,7 +99,7 @@ fn main() {
     // Main Loop
     for k in 1..NT {
 
-        if k%100 == 0 { println!("timestep : {}", k)}
+        //if k%100 == 0 { println!("timestep : {}", k)}
         // inject source
         px[isy][isx] = px[isy][isx] + dt*0.5*fs[k];
         py[isy][isx] = py[isy][isx] + dt*0.5*fs[k];
@@ -142,6 +133,8 @@ fn main() {
         sfd[k] = px[iry][irx] + py[iry][irx];
     };
 
+    /** uncomment to output the trace at receiver postion
+
     let path = Path::new("trace.txt");
     let display = path.display();
 
@@ -163,6 +156,6 @@ fn main() {
             Ok(_) => println!("successfully wrote to {}", display),
         }
     }
-
+    **/
 
 }

@@ -2,3 +2,9 @@ fortran/*.exe
 fortran/test.*
 
 rust/main
+
+rusted/
+rusted/*
+
+*.txt
+*.lock

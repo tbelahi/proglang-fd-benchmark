@@ -17,4 +17,4 @@ As of now, the programming languages that are compared are:
 Just run the `comparison.sh` script and look at the output.
 
 #### Results
-See by yourself. There is no big surprise. The Julia implementation is faster (on my machine) than Fortran90 compiled with gfortran thanks to the use of SIMD instructions. This is the main taking home point I got from this little exercise. My poor knowledge of Rust lead to a super slow implementation. I guess the way I construct a 2D array with collection of vecs does not help at all.
+See by yourself. There is no big surprise. The Julia implementation is faster (on my machine) than Fortran90 compiled with gfortran thanks to the use of SIMD instructions. This is the main taking home point I got from this little exercise. Rust implementation is working fine. Maybe it can be optimized. Already figuring out that it should be compiled with `cargo build --release` made a tremendous improvement.
