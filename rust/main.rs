@@ -1,6 +1,6 @@
 use std::f64;
 use std::thread;
-
+use ndarray::arr2;
 // there is a crate ndarray that would make my life easier !!
 
 fn main() {
