@@ -1,4 +1,10 @@
 use std::f64;
+use std::thread;
+use std::iter;
+use std::error::Error;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
 
 fn main() {
     //println!("Hello, world!);
@@ -133,7 +139,7 @@ fn main() {
         sfd[k] = px[iry][irx] + py[iry][irx];
     };
 
-    /** uncomment to output the trace at receiver postion
+    /* uncomment to output the trace at receiver postion
 
     let path = Path::new("trace.txt");
     let display = path.display();
@@ -156,6 +162,6 @@ fn main() {
             Ok(_) => println!("successfully wrote to {}", display),
         }
     }
-    **/
+    */
 
 }
