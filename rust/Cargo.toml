@@ -1,0 +1,4 @@
+[package]
+name = "fdtd2ds"
+version = "0.1.0"
+authors = ["tbelahi <belahi@ipgp.fr>"]

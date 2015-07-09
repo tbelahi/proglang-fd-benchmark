@@ -22,7 +22,7 @@ fn main() {
 
     // mutable float64 pseudo array of size (rows = NY2, columns = NX2)
     // vp end up in the heap, no allocation problem
-    let mut row = iter::repeat(vp0).take(NX2).collect();
+    let row = iter::repeat(vp0).take(NX2).collect();
     let mut vp: Vec<Vec<f64>> = iter::repeat(row).take(NY2).collect();
 
     for i in 0..NY2 {
@@ -41,7 +41,7 @@ fn main() {
     let iry = 300;
 
     //source and parameters
-    const NT: usize = 300;
+    const NT: usize = 3000;
     let fc = 1000.0;
     let dx: f64  = vp0/(30.0*fc);
     let dy = dx;
@@ -55,7 +55,7 @@ fn main() {
     for i in 0..NT {
         t[i] = (i as f64)*dt;
     };
-    let lsour = tsour/dt;
+    //let lsour = tsour/dt;
     let t0 = tsour*1.5;
     let mut tau: Vec<f64> = iter::repeat(0f64).take(NT).collect();
     for i in 0..NT {
@@ -71,8 +71,8 @@ fn main() {
     let npml = 30;
     let pmlfac: f64 = 50.0;
     let pmlexp: i32 = 2;
-    let mut qxrow = iter::repeat(0f64).take(NX2).collect();
-    let mut qyrow = iter::repeat(0f64).take(NX2).collect();
+    let qxrow = iter::repeat(0f64).take(NX2).collect();
+    let qyrow = iter::repeat(0f64).take(NX2).collect();
     let mut qx: Vec<Vec<f64>> = iter::repeat(qxrow).take(NY2).collect();
     let mut qy: Vec<Vec<f64>> = iter::repeat(qyrow).take(NY2).collect();
 
@@ -91,10 +91,10 @@ fn main() {
 
     // initialize fields
 
-    let mut pxrow = iter::repeat(0f64).take(NX2).collect();
-    let mut uxrow = iter::repeat(0f64).take(NX2).collect();
-    let mut pyrow = iter::repeat(0f64).take(NX2).collect();
-    let mut uyrow = iter::repeat(0f64).take(NX2).collect();
+    let pxrow = iter::repeat(0f64).take(NX2).collect();
+    let uxrow = iter::repeat(0f64).take(NX2).collect();
+    let pyrow = iter::repeat(0f64).take(NX2).collect();
+    let uyrow = iter::repeat(0f64).take(NX2).collect();
     let mut px: Vec<Vec<f64>> = iter::repeat(pxrow).take(NY2).collect();
     let mut py: Vec<Vec<f64>> = iter::repeat(pyrow).take(NY2).collect();
     let mut ux: Vec<Vec<f64>> = iter::repeat(uxrow).take(NY2).collect();
@@ -108,7 +108,7 @@ fn main() {
     // Main Loop
     for k in 1..NT {
 
-        if k%10 == 0 { println!("timestep : {}", k)}
+        if k%100 == 0 { println!("timestep : {}", k)}
         // inject source
         px[isy][isx] = px[isy][isx] + dt*0.5*fs[k];
         py[isy][isx] = py[isy][isx] + dt*0.5*fs[k];
@@ -142,7 +142,7 @@ fn main() {
         sfd[k] = px[iry][irx] + py[iry][irx];
     };
 
-     let path = Path::new("trace.txt");
+    let path = Path::new("trace.txt");
     let display = path.display();
 
     // Open a file in write-only mode, returns `io::Result<File>`

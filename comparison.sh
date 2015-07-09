@@ -56,8 +56,8 @@ cd ..
 cd rust
 
 echo "rust :"
-rustc main.rs
-time ./main
+cargo build --release
+time ./target/release/fdtd2ds
 
 cd ..
 
