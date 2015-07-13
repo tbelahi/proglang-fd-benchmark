@@ -109,11 +109,11 @@ function fdtd2ds(source)
   return record
 end
 
-#rec = @time fdtd2ds(0)
+rec = @time fdtd2ds(0)
 #println(rec)
-#rec = @time fdtd2ds(0)
+rec = @time fdtd2ds(0)
 #println(rec)
-#rec = @time fdtd2ds(0)
+rec = @time fdtd2ds(0)
 #println(rec)
 ##tfd = t*1000
 ##clf
