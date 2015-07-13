@@ -73,16 +73,24 @@ fn main() {
     let mut qx: Vec<Vec<f64>> = iter::repeat(qxrow).take(NY2).collect();
     let mut qy: Vec<Vec<f64>> = iter::repeat(qyrow).take(NY2).collect();
 
-    for i in 0..npml {
-        for j in 0..NX2 {
+    let mut i= 0;
+    let mut j= 0;
+    while i<npml {
+        while j<NX2 {
             qy[i][j] = pmlfac*(((npml-i) as f64 ).powi(pmlexp));
             qy[NY2-i-1][j] = pmlfac*(((npml-i) as f64).powi(pmlexp));
+            i += 1;
+            j += 1;
         }
     };
-    for i in 0..NY2 {
-        for j in 0..npml {
+    let mut i= 0;
+    let mut j= 0;
+    while i<NY2 {
+        while j<npml {
             qx[i][NX2-j-1] = pmlfac*(((npml-j) as f64).powi(pmlexp));
             qx[i][j] = pmlfac*(((npml-j) as f64).powi(pmlexp));
+            i += 1;
+            j += 1;
         }
     };
 
@@ -103,7 +111,8 @@ fn main() {
     let mut pmlop  = 0f64;
 
     // Main Loop
-    for k in 1..NT {
+    let mut k = 1;
+    while k<NT {
 
         //if k%100 == 0 { println!("timestep : {}", k)}
         // inject source
@@ -111,8 +120,10 @@ fn main() {
         py[isy][isx] = py[isy][isx] + dt*0.5*fs[k];
 
         //staggered grid, loop over space
-        for i in 0..NY {
-            for j in 0..NX{
+        let mut i = 0;
+        let mut j = 0;
+        while i<NY {
+            while j<NX{
                 //update px
                 diffop = (ux[i+1][j] - ux[i][j])/dx;
                 pmlop  = qx[i+1][j+1]*px[i+1][j+1];
@@ -133,10 +144,14 @@ fn main() {
                 pmlop  = 0.5*(qy[i+1][j+1]+qy[i][j+1])*uy[i][j];
                 uy[i][j] = uy[i][j] - dt/rho*(pmlop + diffop);
 
+                i += 1;
+                j += 1;
+
             };
         };
 
         sfd[k] = px[iry][irx] + py[iry][irx];
+        k += 1;
     };
 
     /* uncomment to output the trace at receiver postion
