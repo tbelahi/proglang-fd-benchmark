@@ -39,8 +39,11 @@ cd ..
 ############
 cd python
 
-echo "python :"
+echo "python vectorised :"
 python fdtd_wave_equation.py
+
+echo "python loop+numba(jit) :"
+python fdtd_wave_equation_jitted.py
 
 cd ..
 
