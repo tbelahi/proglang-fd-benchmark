@@ -13,6 +13,10 @@ echo "Fortran (gfortran): "
 gfortran fdtd2Ds.f90 -o fdtd_gfortran.exe -O3
 time ./fdtd_gfortran.exe
 
+echo "Fortran (ifort -04 -... agresive)"
+ifort fdtd2Ds.f90 -o fdtd_agressive.exe -O4 -check nobounds -xAVX -ftz -shared-intel -mcmodel=medium
+time ./fdtd_agressive.exe
+
 cd ..
 
 ###########
