@@ -14,7 +14,7 @@ function make_source(source,fc,nt,dt)
   fs::Array{Float64,1} = zeros(nt)
   if source==0
     @simd for k=1:nt
-      fs[k] =(1-coeff*tau[k])*exp(-2*tau[k]*tau[k])
+      fs[k] =(1-coeff*tau[k]*tau[k])*exp(-2*tau[k]*tau[k])
     end
   else
     fs=source
@@ -52,7 +52,7 @@ function fdtd2ds(source, npml_in=80, pmlfac_in=1.2, pmlexp_in=1.5)
   dx::Float64 = vp0/(30*fc)
   dy::Float64 = dx
   dt::Float64 = dx/vp0*1/(sqrt(2)*2*pi)
-  #print("dx : $dx , dt : $dt , nt : $nt")   
+  #print("dx : $dx , dt : $dt , nt : $nt")
 
   # Define source-time function
   fs = make_source(source,fc,nt,dt)
@@ -134,7 +134,7 @@ function fdtd2ds(source, npml_in=80, pmlfac_in=1.2, pmlexp_in=1.5)
     sfd1[a] = px[irx,300] + py[irx,300]
     sfd2[a] = px[irx,100] + py[irx,100]
 
-    #if (a % 100 == 0) 
+    #if (a % 100 == 0)
     #  println("a: $a/$nt")
     #  plt.imshow(px + py)
     #  plt.draw()
@@ -169,9 +169,3 @@ trace3, trace4 = @time fdtd2ds(0, 30, 50,2)
 #    println("nmpl: $(i*10)")
 #    traces_right[i,:], traces_left[i,:] = fdtd2ds(0, i*10)
 #end
-    
-    
-
-
-
-    
