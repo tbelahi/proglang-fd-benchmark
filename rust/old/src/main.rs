@@ -29,7 +29,7 @@ fn main() {
         };
     };
 
-    println!("{}", vp[NY2-1][NX2-1]);
+    // println!("{}", vp[NY2-1][NX2-1]);
 
     //define source and receiver position
     let isx = 200;
@@ -44,7 +44,7 @@ fn main() {
     let dy = dx;
     let dt: f64 = dx/vp0*1.0/(f64::consts::SQRT_2*2.0*f64::consts::PI);
 
-    println!("nt: {}\nfc: {}\ndx: {}\ndy: {}\ndt: {}", NT, fc, dx, dy, dt);
+    // println!("nt: {}\nfc: {}\ndx: {}\ndy: {}\ndt: {}", NT, fc, dx, dy, dt);
 
     // define source function in time
     let tsour = 1.0/fc;
@@ -64,9 +64,9 @@ fn main() {
         fs[i] = (1.0 - a*tau[i]*tau[i])*((-2.0*tau[i]*tau[i]).exp())
     };
 
-    for g in 0..10 {
-        println!("{}", fs[g]);
-    };
+    // for g in 0..10 {
+    //     println!("{}", fs[g]);
+    // };
 
     // define PML properties
     let npml = 30;
@@ -148,32 +148,32 @@ fn main() {
         count += 1;
     };
 
-    println!("Done. (count ! {})", count);
+    // println!("Done. (count ! {})", count);
 
-     //uncomment to output the trace at receiver postion
+    //  //uncomment to output the trace at receiver postion
 
-    let path = Path::new("trace.txt");
-    let display = path.display();
+    // let path = Path::new("trace.txt");
+    // let display = path.display();
 
-    // Open a file in write-only mode, returns `io::Result<File>`
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}: {}",
-                           display,
-                           Error::description(&why)),
-        Ok(file) => file,
-    };
+    // // Open a file in write-only mode, returns `io::Result<File>`
+    // let mut file = match File::create(&path) {
+    //     Err(why) => panic!("couldn't create {}: {}",
+    //                        display,
+    //                        Error::description(&why)),
+    //     Ok(file) => file,
+    // };
 
-    for i in 0..sfd.len(){
-        let s = sfd[i].to_string()+"\n";
-        match file.write_all(s.as_bytes()) {
-            Err(why) => {
-                panic!("couldn't write to {}: {}", display,
-                                                Error::description(&why))
-            },
-            //Ok(_) => println!("successfully wrote to {}", display),
-            Ok(_) => (),
-        }
-    }
+    // for i in 0..sfd.len(){
+    //     let s = sfd[i].to_string()+"\n";
+    //     match file.write_all(s.as_bytes()) {
+    //         Err(why) => {
+    //             panic!("couldn't write to {}: {}", display,
+    //                                             Error::description(&why))
+    //         },
+    //         //Ok(_) => println!("successfully wrote to {}", display),
+    //         Ok(_) => (),
+    //     }
+    // }
 
 
 }

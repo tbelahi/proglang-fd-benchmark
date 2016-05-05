@@ -39,7 +39,8 @@ fn main() {
     // new style for initialization
     let vp= OwnedArray::from_elem((ny2, nx2), 1.0f64).map(|& x| x*vp0*vp0);
 
-    println!("vp[:5, :5] is:\n{}", vp.slice(s![..5, ..5]));
+    // show vp (which is  vp0^2)
+    // println!("vp[:5, :5] is:\n{}", vp.slice(s![..5, ..5]));
 
     // define source and receiver positions
     let isx = 200;
@@ -47,34 +48,37 @@ fn main() {
     let irx = 200;
     let iry = 300;
 
-    // source and its parameters
+    // source function and its parameters
     let nt = 3000;
     let fc: f64 = 1000.0;
     let mut dx: f64 = vp0/(30.0*fc);
     let mut dy = dx;
     let dt: f64 = dx/vp0*1.0/((2.0 as f64).sqrt()*2.0*PI);
 
-    println!("nt: {}\nfc: {}\ndx: {}\ndy: {}\ndt: {}", nt, fc, dx, dy, dt);
+    // show source parameters
+    // println!("nt: {}\nfc: {}\ndx: {}\ndy: {}\ndt: {}", nt, fc, dx, dy, dt);
 
     // define source function in time
     let tsour = 1.0/fc;
     let mut t = OwnedArray::from_elem((nt), 0.0f64);
-
+    // ~ t = range(0, nt)*dt
     for (i, elt) in t.indexed_iter_mut() {
         *elt = (i as f64)*dt;
     }
+    // show t
     // println!("time :\n{}", t.slice(s![..10]));
     let t0 = tsour*1.5;
     let tau = t.map(|&elt| PI*(elt - t0)/t0);
     let a = 4.0;
     let fs = tau.map(|&x| (1.0 - a*x*x)*((-2.0*x*x).exp()));
 
+    // 2 ways to show first ten elements of the source function
     // println!("source function: {}", fs.slice(s![..10]));
-    for g in 0..10 {
-      println!("{}, {}", fs.get((g)).unwrap(), fs.get((nt-1-g)).unwrap());
-    }
+    // for g in 0..10 {
+    //   println!("{}, {}", fs.get((g)).unwrap(), fs.get((nt-1-g)).unwrap());
+    // }
 
-    // define PML properties
+    // define PML properties and set up PML arrays
     let npml = 30;
     let pmlfac: f64 = 50.0;
     let pmlexp: i32 = 2;
@@ -98,7 +102,7 @@ fn main() {
         }
     };
 
-    // initialize fields
+    // initialize (wave)fields
     let mut px = OwnedArray::from_elem((ny2, nx2), 0f64);
     let mut py = OwnedArray::from_elem((ny2, nx2), 0f64);
     let mut ux = OwnedArray::from_elem((ny2, nx2), 0f64);
@@ -107,6 +111,7 @@ fn main() {
     // receiver trace
     let mut sfd = OwnedArray::from_elem((nt), 0f64);
 
+    // some declarations
     let mut diffop: f64;
     let mut pmlop: f64;
 
@@ -115,10 +120,11 @@ fn main() {
     dy = 1.0/dy;
     let one_over_rho = 1.0/rho;
 
-    let mut count = 0;
     // Main loop
     'time: for k in 1..nt {
+
         /* some tests to understand how things work
+        // available methods for indexing are .get, .uget, .get_mut, .uget_mut
         println!("source: {:?}", fs.get((k)));
         let tmp = 0.5*fs.get((k)).unwrap();
         println!("1/2: {}", tmp);
@@ -132,11 +138,15 @@ fn main() {
         // *(py.get_mut((isy, isx))).unwrap() += dt*0.5*(fs.get((k))).unwrap();
 
         // insert source in unsafe mode
+        // unsafe means danger with pointers check nasty errors at revision: 3522e60
+        // that was debugged by commit: aac622b
         unsafe{
             *px.uget_mut((isy, isx)) = px.uget((isy, isx)) + dt*0.5*fs.uget((k));
             *py.uget_mut((isy, isx)) = px.uget((isy, isx)) + dt*0.5*fs.uget((k));
         }
+
         // staggered grid, loop over space
+        // row major, memory is contiguous along rows
         'space: for i in 0..ny {
             for j in 0..nx {
                 unsafe{
@@ -159,44 +169,41 @@ fn main() {
                     diffop = (px.uget((i+1, j+1)) - px.uget((i+1, j)) + py.uget((i+1, j+1)) -py.uget((i+1, j)))*dy;
                     pmlop  = 0.5*(qy.uget((i+1, j+1))+qy.uget((i+1, j)))*uy.uget((i,j));
                     *uy.uget_mut((i,j)) = uy.uget((i,j)) - dt*one_over_rho*(pmlop + diffop);
-
-                    count += 1;
                 }
             };
         };
 
+        // store trace at receiver position for timestep k
         unsafe{
             *sfd.uget_mut((k)) = px.uget((iry, irx)) + py.uget((iry, irx));
         }
         //println!("{}", sfd.get((k)).unwrap())
-        count += 1;
-
     }
-    println!("Done. (count ! {})", count);
+    // println!("Done!");
 
     /* uncomment to output the trace at receiver postion */
 
-    let path = Path::new("trace.txt");
-    let display = path.display();
+    // let path = Path::new("trace.txt");
+    // let display = path.display();
 
-    // Open a file in write-only mode, returns `io::Result<File>`
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}: {}",
-                           display,
-                           Error::description(&why)),
-        Ok(file) => file,
-    };
+    // // Open a file in write-only mode, returns `io::Result<File>`
+    // let mut file = match File::create(&path) {
+    //     Err(why) => panic!("couldn't create {}: {}",
+    //                        display,
+    //                        Error::description(&why)),
+    //     Ok(file) => file,
+    // };
 
-    for i in 0..sfd.len(){
-        let s = sfd.get((i)).unwrap().to_string()+"\n";
-        match file.write_all(s.as_bytes()) {
-            Err(why) => {
-                panic!("couldn't write to {}: {}", display,
-                       Error::description(&why))
-            },
-            //Ok(_) => println!("successfully wrote to {}", display),
-            Ok(_) => (),
-        }
-    }
+    // for i in 0..sfd.len(){
+    //     let s = sfd.get((i)).unwrap().to_string()+"\n";
+    //     match file.write_all(s.as_bytes()) {
+    //         Err(why) => {
+    //             panic!("couldn't write to {}: {}", display,
+    //                    Error::description(&why))
+    //         },
+    //         //Ok(_) => println!("successfully wrote to {}", display),
+    //         Ok(_) => (),
+    //     }
+    // }
 
 }
