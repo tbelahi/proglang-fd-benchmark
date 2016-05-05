@@ -61,10 +61,17 @@ cd ..
 ## RUST ##
 ##########
 cd rust
+cd old
 
 echo "rust :"
 cargo build --release
 time ./target/release/fdtd2ds
 
 cd ..
+cd new
 
+echo "rust :"
+cargo build --release
+time ./target/release/fdtd2ds
+
+cd ..

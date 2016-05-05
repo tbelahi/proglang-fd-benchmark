@@ -44,7 +44,7 @@ fn main() {
     let dy = dx;
     let dt: f64 = dx/vp0*1.0/(f64::consts::SQRT_2*2.0*f64::consts::PI);
 
-    //println!("{} {} {} {} {}", nt, fc, dx, dy, dt);
+    println!("nt: {}\nfc: {}\ndx: {}\ndy: {}\ndt: {}", NT, fc, dx, dy, dt);
 
     // define source function in time
     let tsour = 1.0/fc;
@@ -62,6 +62,10 @@ fn main() {
     let mut fs: Vec<f64> = iter::repeat(0f64).take(NT).collect();
     for i in 0..NT {
         fs[i] = (1.0 - a*tau[i]*tau[i])*((-2.0*tau[i]*tau[i]).exp())
+    };
+
+    for g in 0..10 {
+        println!("{}", fs[g]);
     };
 
     // define PML properties
@@ -102,6 +106,7 @@ fn main() {
     let mut diffop = 0f64;
     let mut pmlop  = 0f64;
 
+    let mut count = 0;
     // Main Loop
     for k in 1..NT {
 
@@ -133,35 +138,42 @@ fn main() {
                 pmlop  = 0.5*(qy[i+1][j+1]+qy[i][j+1])*uy[i][j];
                 uy[i][j] = uy[i][j] - dt/rho*(pmlop + diffop);
 
+                count += 1;
+
             };
         };
 
         sfd[k] = px[iry][irx] + py[iry][irx];
+        //println!("{}", sfd[k])
+        count += 1;
     };
 
-    /* uncomment to output the trace at receiver postion
+    println!("Done. (count ! {})", count);
 
-    let path = Path::new("trace.txt");
-    let display = path.display();
+     //uncomment to output the trace at receiver postion
 
-    // Open a file in write-only mode, returns `io::Result<File>`
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("couldn't create {}: {}",
-                           display,
-                           Error::description(&why)),
-        Ok(file) => file,
-    };
+    // let path = Path::new("trace.txt");
+    // let display = path.display();
 
-    for i in 0..sfd.len(){
-        let s = sfd[i].to_string()+"\n";
-        match file.write_all(s.as_bytes()) {
-            Err(why) => {
-                panic!("couldn't write to {}: {}", display,
-                                                Error::description(&why))
-            },
-            Ok(_) => println!("successfully wrote to {}", display),
-        }
-    }
-    */
+    // // Open a file in write-only mode, returns `io::Result<File>`
+    // let mut file = match File::create(&path) {
+    //     Err(why) => panic!("couldn't create {}: {}",
+    //                        display,
+    //                        Error::description(&why)),
+    //     Ok(file) => file,
+    // };
+
+    // for i in 0..sfd.len(){
+    //     let s = sfd[i].to_string()+"\n";
+    //     match file.write_all(s.as_bytes()) {
+    //         Err(why) => {
+    //             panic!("couldn't write to {}: {}", display,
+    //                                             Error::description(&why))
+    //         },
+    //         //Ok(_) => println!("successfully wrote to {}", display),
+    //         Ok(_) => (),
+    //     }
+    // }
+
 
 }
