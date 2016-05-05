@@ -1,0 +1,7 @@
+[package]
+name = "fdtd2ds"
+version = "0.1.0"
+authors = ["Thomas Belahi <belahi@ipgp.fr>"]
+
+[dependencies]
+ndarray = ""

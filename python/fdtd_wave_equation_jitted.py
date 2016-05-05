@@ -1,26 +1,7 @@
-#!/usr/bin/env python -tt
-#-*- coding: utf-8 -*-
-
-"""" Finite difference time-domain solver for the acoustic wave equation, based on a staggered
-grid approach, using Euler's equation and Continuity equation"""
-
-#**********************************
-# Thomas Belahi, IPGP, Oct 2013
-#
-# based on Hansruedi Maurer .m
-# file, he provided for modeling
-# course at ETH in 2011
-# staggered grid approach to acous-
-# tic equation
-#
-# convention:
-# - x: horizontal
-# - y: vertical, pointing down
-#**********************************
-
 import numpy as np
-#import matplotlib.pyplot as plt
+from numba.decorators import autojit, jit
 import time
+import matplotlib.pyplot as plt
 
 def fdtd2D():
   # define velocity model
@@ -32,6 +13,7 @@ def fdtd2D():
   vp = vp0*np.ones((nx,ny))
 
   vp = vp**2
+  #vp[ny/2:,:]=4*vp[ny/2:,:]
   rho = 1500.
 
   # define source and receiver position
@@ -42,7 +24,6 @@ def fdtd2D():
 
   # source and FD parameters
   nt = 3000
-  #nt = 300
   fc = 1000.
   dx = vp0/(30.*fc) # 30 points per wavelength
   dy = dx
@@ -83,50 +64,58 @@ def fdtd2D():
   sfd = np.empty((nt,))
 
   # main loop: looping over timesteps
-  for a in range(1,nt):
+  looping(qx,qy,px,py,ux,uy,sfd,fs,nt,nx,ny,nx2,ny2,irx,iry,isx,isy,dx,dy,dt,rho,vp)
+
+  return sfd
+
+@jit
+def looping(qx,qy,px,py,ux,uy,sfd,fs,nt,nx,ny,nx2,ny2,irx,iry,isx,isy,dx,dy,dt,rho,vp):
+ for a in range(1,nt):
 
     # inject source function
     px[isy,isx] = px[isy,isx] + dt*0.5*fs[a]
     py[isy,isx] = py[isy,isx] + dt*0.5*fs[a]
 
-    # update px
-    diffop = (ux[:ny,1:nx2]-ux[:ny,0:nx])/dx
-    pmlop = qx[1:ny2,1:nx2]*px[1:ny2,1:nx2]
-    px[1:ny2,1:nx2] = px[1:ny2,1:nx2] - dt*(pmlop+rho*vp*diffop)
+    for j in range(0,ny-1):
+        for i in range(0,nx-1):
+            # Update px
+            diffop = (ux[i+1,j] - ux[i,j])/dx
+            pmlop = qx[i+1,j+1]*px[i+1,j+1]
+            px[i+1,j+1] = px[i+1,j+1] - dt*(pmlop + rho*vp[i+1,j+1]*diffop)
 
-    # update py
-    diffop = (uy[1:ny2,:nx]-uy[:ny,:nx])/dy
-    pmlop = qy[1:ny2,1:nx2]*py[1:ny2,1:nx2]
-    py[1:ny2,1:nx2] = py[1:ny2,1:nx2] - dt*(pmlop+rho*vp*diffop)
+            # Update py
+            diffop = (uy[i,j+1] - uy[i,j])/dy
+            pmlop = qy[i+1,j+1]*py[i+1,j+1]
+            py[i+1,j+1] = py[i+1,j+1] - dt*(pmlop + rho*vp[i+1,j+1]*diffop)
 
-    # Update ux
-    diffop = (px[1:ny2,1:nx2] - px[1:ny2,:nx] + py[1:ny2,1:nx2] - py[1:ny2,:nx])/dx
-    pmlop = 0.5*(qx[1:ny2,1:nx2]+qx[1:ny2,:nx])*ux[:nx,:ny]
-    ux[:nx,:ny] = ux[:nx,:ny] - dt/rho*(pmlop + diffop)
+            # Update ux
+            diffop = (px[i+1,j+1] - px[i,j+1] + py[i+1,j+1] - py[i,j+1])/dx
+            pmlop = 0.5*(qx[i+1,j+1]+qx[i,j+1])*ux[i,j]
+            ux[i,j] = ux[i,j] - dt/rho*(pmlop + diffop)
 
-    #update uy
-    diffop = (px[1:ny2,1:nx2] - px[:ny,1:nx2] + py[1:ny2,1:nx2] - py[:ny,1:nx2])/dy
-    pmlop = 0.5*(qy[1:ny2,1:nx2]+qy[:ny,1:nx2])*uy[:ny,:nx]
-    uy[:nx,:ny] = uy[:nx,:ny] - dt/rho*(pmlop + diffop)
+            # Update uy
+            diffop = (px[i+1,j+1] - px[i+1,j] + py[i+1,j+1] - py[i+1,j])/dy
+            pmlop = 0.5*(qy[i+1,j+1]+qy[i+1,j])*uy[i,j]
+            uy[i,j] = uy[i,j] - dt/rho*(pmlop + diffop)
 
     sfd[a] = px[iry-1,irx-1] + py[iry-1,irx-1]
 
-  return sfd
-
+    #if a%100 == 0:
+    #  plt.imshow(px+py)
+    #  plt.show()
 
 
 def main():
   t0 = time.time()
   sfd = fdtd2D()
-  print 'ellapsed time to run with vectorised code; 1st pass: ' + str(time.time()-t0) + " seconds"
+  print 'ellapsed time to run with (brutally used) numba; 1st pass: ' + str(time.time()-t0) + " seconds"
   t0 = time.time()
   sfd = fdtd2D()
-  print 'ellapsed time to run with vectorised code; 2nd pass: ' + str(time.time()-t0) + " seconds"
+  print 'ellapsed time to run with (brutally used) numba; 2nd pass: ' + str(time.time()-t0) + " seconds"
   t0 = time.time()
   sfd = fdtd2D()
-  print 'ellapsed time to run with vectorised code; 3nd pass: ' + str(time.time()-t0) + " seconds"
-  #plt.plot(sfd)
-  #plt.show()
+  print 'ellapsed time to run with (brutally used) numba; 3rd pass: ' + str(time.time()-t0) + " seconds"
+
 
 if __name__=='__main__':
   main()

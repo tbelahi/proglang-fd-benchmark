@@ -13,6 +13,10 @@ echo "Fortran (gfortran): "
 gfortran fdtd2Ds.f90 -o fdtd_gfortran.exe -O3
 time ./fdtd_gfortran.exe
 
+echo "Fortran (ifort -04 -... agresive)"
+ifort fdtd2Ds.f90 -o fdtd_agressive.exe -O4 -check nobounds -xAVX -ftz -shared-intel -mcmodel=medium
+time ./fdtd_agressive.exe
+
 cd ..
 
 ###########
@@ -35,8 +39,11 @@ cd ..
 ############
 cd python
 
-echo "python :"
+echo "python vectorised :"
 python fdtd_wave_equation.py
+
+echo "python loop+numba(jit) :"
+python fdtd_wave_equation_jitted.py
 
 cd ..
 
@@ -54,10 +61,17 @@ cd ..
 ## RUST ##
 ##########
 cd rust
+cd old
 
 echo "rust :"
 cargo build --release
 time ./target/release/fdtd2ds
 
 cd ..
+cd new
 
+echo "rust :"
+cargo build --release
+time ./target/release/fdtd2ds
+
+cd ..

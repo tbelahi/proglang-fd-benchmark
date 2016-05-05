@@ -1,7 +1,8 @@
 fortran/*.exe
 fortran/test.*
 
-rust/target/*
+rust/new/target/*
+rust/old/target/*
 
 rusted/
 rusted/*

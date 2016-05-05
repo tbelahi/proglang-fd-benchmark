@@ -19,7 +19,7 @@ function fdtd2ds(source)
   iry = 300
 
   # source and fd parameters fd= finite difference
-  nt = 300 #better is set at 3000
+  nt = 3000 #better is set at 3000
   fc = 1000
   dx = vp0/(30*fc)
   dy = dx
