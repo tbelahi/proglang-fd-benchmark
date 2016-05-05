@@ -37,13 +37,13 @@ fn main() {
      */
 
     // new style for initialization
-    let vp= OwnedArray::from_elem((ny2, nx2), 1.0f64).map(|& x| x*vp0);
+    let vp= OwnedArray::from_elem((ny2, nx2), 1.0f64).map(|& x| x*vp0*vp0);
 
-    // println!("vp[:5, :5] is:\n{}", vp.slice(s![..5, ..5]));
+    println!("vp[:5, :5] is:\n{}", vp.slice(s![..5, ..5]));
 
     // define source and receiver positions
     let isx = 200;
-    let isy = 200;
+    let isy = 100;
     let irx = 200;
     let iry = 300;
 
@@ -69,7 +69,10 @@ fn main() {
     let a = 4.0;
     let fs = tau.map(|&x| (1.0 - a*x*x)*((-2.0*x*x).exp()));
 
-    println!("source function: {}", fs.slice(s![..10]));
+    // println!("source function: {}", fs.slice(s![..10]));
+    for g in 0..10 {
+      println!("{}, {}", fs.get((g)).unwrap(), fs.get((nt-1-g)).unwrap());
+    }
 
     // define PML properties
     let npml = 30;
@@ -130,8 +133,8 @@ fn main() {
 
         // insert source in unsafe mode
         unsafe{
-            *px.uget_mut((isy, isx)) += dt*0.5*fs.uget((k));
-            *py.uget_mut((isy, isx)) += dt*0.5*fs.uget((k));
+            *px.uget_mut((isy, isx)) = px.uget((isy, isx)) + dt*0.5*fs.uget((k));
+            *py.uget_mut((isy, isx)) = px.uget((isy, isx)) + dt*0.5*fs.uget((k));
         }
         // staggered grid, loop over space
         'space: for i in 0..ny {
@@ -145,17 +148,17 @@ fn main() {
                     // update py
                     diffop = (uy.uget((i, j+1)) - uy.uget((i, j)))*dy;
                     pmlop  = qy.uget((i+1, j+1)) * py.uget((i+1, j+1));
-                    *py.uget_mut((i+1, j+1)) -= dt*(pmlop + rho*vp.uget((i+1, j+1))*diffop);
+                    *py.uget_mut((i+1, j+1)) = *py.uget((i+1, j+1)) - dt*(pmlop + rho*vp.uget((i+1, j+1))*diffop);
 
                     //update ux
                     diffop = (px.uget((i+1, j+1)) - px.uget((i, j+1)) + py.uget((i+1, j+1)) -py.uget((i, j+1)))*dx;
                     pmlop  = 0.5*(qx.uget((i+1, j+1))+qx.uget((i, j+1)))*ux.uget((i,j));
-                    *ux.uget_mut((i,j)) -= - dt*one_over_rho*(pmlop + diffop);
+                    *ux.uget_mut((i,j)) = ux.uget((i,j)) - dt*one_over_rho*(pmlop + diffop);
 
                     //update uy
                     diffop = (px.uget((i+1, j+1)) - px.uget((i+1, j)) + py.uget((i+1, j+1)) -py.uget((i+1, j)))*dy;
-                    pmlop  = 0.5*(qy.uget((i+1, j+1))+qy.uget((i, j+1)))*uy.uget((i,j));
-                    *uy.uget_mut((i,j)) -= - dt*one_over_rho*(pmlop + diffop);
+                    pmlop  = 0.5*(qy.uget((i+1, j+1))+qy.uget((i+1, j)))*uy.uget((i,j));
+                    *uy.uget_mut((i,j)) = uy.uget((i,j)) - dt*one_over_rho*(pmlop + diffop);
 
                     count += 1;
                 }
@@ -173,27 +176,27 @@ fn main() {
 
     /* uncomment to output the trace at receiver postion */
 
-    // let path = Path::new("trace.txt");
-    // let display = path.display();
+    let path = Path::new("trace.txt");
+    let display = path.display();
 
-    // // Open a file in write-only mode, returns `io::Result<File>`
-    // let mut file = match File::create(&path) {
-    //     Err(why) => panic!("couldn't create {}: {}",
-    //                        display,
-    //                        Error::description(&why)),
-    //     Ok(file) => file,
-    // };
+    // Open a file in write-only mode, returns `io::Result<File>`
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}: {}",
+                           display,
+                           Error::description(&why)),
+        Ok(file) => file,
+    };
 
-    // for i in 0..sfd.len(){
-    //     let s = sfd.get((i)).unwrap().to_string()+"\n";
-    //     match file.write_all(s.as_bytes()) {
-    //         Err(why) => {
-    //             panic!("couldn't write to {}: {}", display,
-    //                    Error::description(&why))
-    //         },
-    //         //Ok(_) => println!("successfully wrote to {}", display),
-    //         Ok(_) => (),
-    //     }
-    // }
+    for i in 0..sfd.len(){
+        let s = sfd.get((i)).unwrap().to_string()+"\n";
+        match file.write_all(s.as_bytes()) {
+            Err(why) => {
+                panic!("couldn't write to {}: {}", display,
+                       Error::description(&why))
+            },
+            //Ok(_) => println!("successfully wrote to {}", display),
+            Ok(_) => (),
+        }
+    }
 
 }
