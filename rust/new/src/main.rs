@@ -183,27 +183,27 @@ fn main() {
 
     /* uncomment to output the trace at receiver postion */
 
-    // let path = Path::new("trace.txt");
-    // let display = path.display();
+    let path = Path::new("trace.txt");
+    let display = path.display();
 
-    // // Open a file in write-only mode, returns `io::Result<File>`
-    // let mut file = match File::create(&path) {
-    //     Err(why) => panic!("couldn't create {}: {}",
-    //                        display,
-    //                        Error::description(&why)),
-    //     Ok(file) => file,
-    // };
+    // Open a file in write-only mode, returns `io::Result<File>`
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}: {}",
+                           display,
+                           Error::description(&why)),
+        Ok(file) => file,
+    };
 
-    // for i in 0..sfd.len(){
-    //     let s = sfd.get((i)).unwrap().to_string()+"\n";
-    //     match file.write_all(s.as_bytes()) {
-    //         Err(why) => {
-    //             panic!("couldn't write to {}: {}", display,
-    //                    Error::description(&why))
-    //         },
-    //         //Ok(_) => println!("successfully wrote to {}", display),
-    //         Ok(_) => (),
-    //     }
-    // }
+    for i in 0..sfd.len(){
+        let s = sfd.get((i)).unwrap().to_string()+"\n";
+        match file.write_all(s.as_bytes()) {
+            Err(why) => {
+                panic!("couldn't write to {}: {}", display,
+                       Error::description(&why))
+            },
+            //Ok(_) => println!("successfully wrote to {}", display),
+            Ok(_) => (),
+        }
+    }
 
 }
