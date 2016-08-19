@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Thomas Belahi <belahi@ipgp.fr>"]
 
 [dependencies]
-ndarray = "0.5.1"
+ndarray = "0.6"
