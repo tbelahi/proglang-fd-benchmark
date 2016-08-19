@@ -63,15 +63,20 @@ cd ..
 cd rust
 cd old
 
-echo "rust :"
+echo "rust (homemade arrays):"
 cargo build --release
-time ./target/release/fdtd2ds
+time cargo run --release
 
 cd ..
 cd new
 
-echo "rust :"
-cargo build --release
-time ./target/release/fdtd2ds
+echo "rust (ndarray + unsafe):"
+if (uname)
+if [[ "$unamestr" == 'Linux' ]]; then
+    cargo build --release -target=x86_64-unknown-linux-gnu --target-cpu=native
+else; then
+    cargo build --release
+fi
+time cargo run --release
 
 cd ..
