@@ -2,7 +2,7 @@
 function make_source(source,fc,nt,dt)
   coeff::Float64=4
   tsour::Float64=1/fc
-  t::Array{Float64,1}= [0:nt-1]*dt
+  t::Array{Float64,1}= collect(0:nt-1)*dt
   lsour::Float64=tsour/dt
   t0::Float64=tsour*1.5
   T0::Float64=1/t0
@@ -79,10 +79,10 @@ function fdtd2ds(source, npml_in=80, pmlfac_in=1.2, pmlexp_in=1.5)
     end
   end
 
-  qx = [qx[:,1] qx] # pour que ça fasse la taille nx2, ny2
-  qx = [qx[1,:]; qx]
-  qy = [qy[:,1] qy]
-  qy = [qy[1,:]; qy]
+  qx = hcat(qx[:,1], qx) # pour que ça fasse la taille nx2, ny2
+  qx = vcat(qx[1,:], qx)
+  qy = hcat(qy[:,1], qy)
+  qy = vcat(qy[1,:], qy)
 
 
 

@@ -5,6 +5,10 @@
 #############
 cd fortran
 
+echo "Fortran (ifort -O0): "
+ifort fdtd2Ds.f90 -o fdtd-slow.exe -O0
+time ./fdtd-slow.exe
+
 echo "Fortran (ifort -O3): "
 ifort fdtd2Ds.f90 -o fdtd.exe -O3
 time ./fdtd.exe
@@ -71,12 +75,14 @@ cd ..
 cd new
 
 echo "rust (ndarray + unsafe):"
-if (uname)
-if [[ "$unamestr" == 'Linux' ]]; then
-    cargo build --release -target=x86_64-unknown-linux-gnu --target-cpu=native
-else; then
-    cargo build --release
-fi
+#if (uname)
+#if [[ "$unamestr" == 'Linux' ]]; then
+#    cargo build --release -target=x86_64-unknown-linux-gnu --target-cpu=native
+#else; then
+#    cargo build --release
+#fi
+#time cargo run --release
+cargo build --release
 time cargo run --release
 
 cd ..

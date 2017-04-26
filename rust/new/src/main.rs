@@ -2,10 +2,7 @@
 extern crate ndarray;
 
 use ndarray::{
-    ArrayView,
-    ArrayViewMut,
-    OwnedArray,
-    Ix,
+    Array,
 };
 
 use std::f64;
@@ -15,7 +12,6 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 
-type Ix2 = (Ix, Ix);
 
 fn main() {
     let nx = 400;        // columns
@@ -28,7 +24,7 @@ fn main() {
 
     // array for velocity initialized with ones
     /* old style
-    let mut vp = OwnedArray::from_elem((ny2, nx2), 1.0);
+    let mut vp = Array::from_elem((ny2, nx2), 1.0);
 
     for (_, elt) in vp.indexed_iter_mut() {
         // multiply each cell of array (which is 1.0) by vp0
@@ -37,7 +33,7 @@ fn main() {
      */
 
     // new style for initialization
-    let vp= OwnedArray::from_elem((ny2, nx2), 1.0f64).map(|& x| x*vp0*vp0);
+    let vp= Array::from_elem((ny2, nx2), 1.0f64).map(|& x| x*vp0*vp0);
 
     // show vp (which is  vp0^2)
     // println!("vp[:5, :5] is:\n{}", vp.slice(s![..5, ..5]));
@@ -60,7 +56,7 @@ fn main() {
 
     // define source function in time
     let tsour = 1.0/fc;
-    let mut t = OwnedArray::from_elem((nt), 0.0f64);
+    let mut t = Array::from_elem((nt), 0.0f64);
     // ~ t = range(0, nt)*dt
     for (i, elt) in t.indexed_iter_mut() {
         *elt = (i as f64)*dt;
@@ -82,8 +78,8 @@ fn main() {
     let npml = 30;
     let pmlfac: f64 = 50.0;
     let pmlexp: i32 = 2;
-    let mut qx = OwnedArray::from_elem((ny2, nx2), 0f64);
-    let mut qy = OwnedArray::from_elem((ny2, nx2), 0f64);
+    let mut qx = Array::from_elem((ny2, nx2), 0f64);
+    let mut qy = Array::from_elem((ny2, nx2), 0f64);
 
     for i in 0..npml {
         for j in 0..nx2 {
@@ -103,13 +99,13 @@ fn main() {
     };
 
     // initialize (wave)fields
-    let mut px = OwnedArray::from_elem((ny2, nx2), 0f64);
-    let mut py = OwnedArray::from_elem((ny2, nx2), 0f64);
-    let mut ux = OwnedArray::from_elem((ny2, nx2), 0f64);
-    let mut uy = OwnedArray::from_elem((ny2, nx2), 0f64);
+    let mut px = Array::from_elem((ny2, nx2), 0f64);
+    let mut py = Array::from_elem((ny2, nx2), 0f64);
+    let mut ux = Array::from_elem((ny2, nx2), 0f64);
+    let mut uy = Array::from_elem((ny2, nx2), 0f64);
 
     // receiver trace
-    let mut sfd = OwnedArray::from_elem((nt), 0f64);
+    let mut sfd = Array::from_elem((nt), 0f64);
 
     // some declarations
     let mut diffop: f64;
